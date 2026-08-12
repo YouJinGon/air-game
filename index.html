@@ -602,12 +602,11 @@ function drawPlayer(){
   ctx.shadowColor = p.chara.color;
   ctx.shadowBlur = shadowBlurAmt;
 
-  // main fuselage - smooth tapered jet silhouette
-  const bodyGrad = ctx.createLinearGradient(-16,-20,16,16);
-  bodyGrad.addColorStop(0, p.chara.color2);
-  bodyGrad.addColorStop(0.5, p.chara.color);
-  bodyGrad.addColorStop(1, shadeColor(p.chara.color,-55));
-  ctx.fillStyle = bodyGrad;
+  // main fuselage - bold-outline flat cel-shaded silhouette (Psikyo arcade style)
+  const baseCol = p.chara.color;
+  const liteCol = shadeColor(baseCol, 75);
+  const darkCol = shadeColor(baseCol, -65);
+
   ctx.beginPath();
   ctx.moveTo(0,-20);
   ctx.bezierCurveTo(3,-13, 5,-4, 16,9);
@@ -619,39 +618,66 @@ function drawPlayer(){
   ctx.lineTo(-16,9);
   ctx.bezierCurveTo(-5,-4,-3,-13,0,-20);
   ctx.closePath();
+
+  // flat base color fill
+  ctx.fillStyle = baseCol;
   ctx.fill();
 
-  // wing edge highlight
-  ctx.strokeStyle = shadeColor(p.chara.color,60);
-  ctx.globalAlpha = 0.55;
-  ctx.lineWidth = 1;
+  // shadow block (right/underside, flat tone - no smooth blend)
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = darkCol;
   ctx.beginPath();
-  ctx.moveTo(16,9); ctx.lineTo(9,7);
-  ctx.moveTo(-16,9); ctx.lineTo(-9,7);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.moveTo(2,-16); ctx.lineTo(16,9); ctx.lineTo(9,7); ctx.lineTo(2,17); ctx.lineTo(0,13); ctx.lineTo(1,-4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 
-  // center spine line
-  ctx.strokeStyle = shadeColor(p.chara.color,-70);
-  ctx.globalAlpha = 0.5;
-  ctx.lineWidth = 1.2;
+  // highlight block (left/top, flat crisp tone)
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = liteCol;
   ctx.beginPath();
-  ctx.moveTo(0,-16); ctx.lineTo(0,13);
+  ctx.moveTo(0,-20); ctx.lineTo(-1,-4); ctx.lineTo(-4,2); ctx.lineTo(-9,7); ctx.lineTo(-16,9); ctx.lineTo(-3,-13);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // bold ink outline (the key Psikyo-style silhouette line)
+  ctx.lineJoin='round';
+  ctx.strokeStyle = '#180d08';
+  ctx.lineWidth = 2.2;
   ctx.stroke();
-  ctx.globalAlpha = 1;
+
+  // sharp specular highlight streak
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(-1,-16); ctx.lineTo(-4,0);
+  ctx.stroke();
+
   ctx.shadowBlur = 0;
 
-  // cockpit glass - radial gradient dome
-  const cockpitGrad = ctx.createRadialGradient(-1,-8,0.5,0,-5,6.5);
-  cockpitGrad.addColorStop(0,'#ffffff');
-  cockpitGrad.addColorStop(0.4,'#bdf3ff');
-  cockpitGrad.addColorStop(1,'rgba(0,140,220,0.65)');
-  ctx.fillStyle = cockpitGrad;
+  // cockpit glass - bold outline, two-tone flat glass panel
   ctx.beginPath();
   ctx.ellipse(0,-5,3.6,5.6,0,0,Math.PI*2);
+  ctx.fillStyle = '#0d3a52';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-  ctx.lineWidth = 0.8;
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = '#bdf3ff';
+  ctx.beginPath();
+  ctx.ellipse(-1,-7,2.2,3,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha=0.9;
+  ctx.beginPath();
+  ctx.ellipse(-1.6,-8,0.9,1.6,0.3,0,Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.restore();
+  ctx.strokeStyle = '#180d08';
+  ctx.lineWidth = 1.4;
   ctx.stroke();
 
   if(p.charging){
@@ -845,12 +871,7 @@ function drawEnemies(){
 
 function drawNinjaEnemy(color){
   ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  const grad = ctx.createLinearGradient(0,-13,0,10);
-  grad.addColorStop(0, shadeColor(color,60));
-  grad.addColorStop(0.5, color);
-  grad.addColorStop(1, shadeColor(color,-60));
-  ctx.fillStyle = grad;
+  ctx.shadowBlur = 8;
   ctx.beginPath();
   ctx.moveTo(0,-13);
   ctx.bezierCurveTo(3,-7,9,-1,13,8);
@@ -860,79 +881,133 @@ function drawNinjaEnemy(color){
   ctx.lineTo(-13,8);
   ctx.bezierCurveTo(-9,-1,-3,-7,0,-13);
   ctx.closePath();
+
+  // flat base fill
+  ctx.fillStyle = color;
   ctx.fill();
-  ctx.strokeStyle = shadeColor(color,70);
-  ctx.globalAlpha = 0.5; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,6); ctx.stroke();
-  ctx.globalAlpha = 1;
+
+  // flat shadow block (one side)
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = shadeColor(color,-55);
+  ctx.beginPath();
+  ctx.moveTo(1,-10); ctx.lineTo(13,8); ctx.lineTo(4,4); ctx.lineTo(0,9); ctx.lineTo(0,-2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
   ctx.shadowBlur = 0;
-  const cockpitGrad = ctx.createRadialGradient(0,-2,0.5,0,-1,3.4);
-  cockpitGrad.addColorStop(0,'#ffffff');
-  cockpitGrad.addColorStop(1,'rgba(255,255,255,0.15)');
-  ctx.fillStyle = cockpitGrad;
-  ctx.beginPath(); ctx.ellipse(0,-1,2.2,3.2,0,0,Math.PI*2); ctx.fill();
+  ctx.lineJoin='round';
+  ctx.strokeStyle = '#160c07';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = 0.9;
+  ctx.beginPath(); ctx.moveTo(-1,-9); ctx.lineTo(-3,2); ctx.stroke();
+
+  ctx.beginPath(); ctx.ellipse(0,-1,2.2,3.2,0,0,Math.PI*2);
+  ctx.fillStyle = '#0d3a52';
+  ctx.fill();
+  ctx.strokeStyle = '#160c07'; ctx.lineWidth=1;
+  ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.85)';
+  ctx.beginPath(); ctx.ellipse(-0.6,-2,1,1.6,0,0,Math.PI*2); ctx.fill();
 }
 
 function drawMechEnemy(color, t){
   ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  const grad = ctx.createLinearGradient(-13,-13,13,13);
-  grad.addColorStop(0, shadeColor(color,55));
-  grad.addColorStop(0.5, color);
-  grad.addColorStop(1, shadeColor(color,-55));
-  ctx.fillStyle = grad;
+  ctx.shadowBlur = 8;
   roundRectPath(-13,-13,26,26,7);
+  ctx.fillStyle = color;
   ctx.fill();
-  ctx.strokeStyle = shadeColor(color,-70);
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
 
-  // rotating core eye
-  const eyeGrad = ctx.createRadialGradient(0,0,0.5,0,0,7);
-  eyeGrad.addColorStop(0,'#fff8c4');
-  eyeGrad.addColorStop(0.5,'#ffcc33');
-  eyeGrad.addColorStop(1,'#b53a00');
-  ctx.fillStyle = eyeGrad;
-  ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1;
+  // flat shadow block (bottom-right panel)
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = shadeColor(color,-50);
+  ctx.beginPath();
+  ctx.moveTo(3,-13); ctx.lineTo(13,-13); ctx.lineTo(13,13); ctx.lineTo(-13,13); ctx.lineTo(-13,7); ctx.lineTo(3,7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = shadeColor(color,60);
+  ctx.beginPath();
+  ctx.moveTo(-13,-13); ctx.lineTo(3,-13); ctx.lineTo(3,3); ctx.lineTo(-13,3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#160c07';
+  ctx.lineWidth = 1.8;
+  roundRectPath(-13,-13,26,26,7);
+  ctx.stroke();
+
+  // core eye - flat two-tone instead of smooth radial
+  ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2);
+  ctx.fillStyle = '#8a1f00';
+  ctx.fill();
+  ctx.beginPath(); ctx.arc(-1,-1,4,0,Math.PI*2);
+  ctx.fillStyle = '#ffcc33';
+  ctx.fill();
+  ctx.beginPath(); ctx.arc(-2,-2,1.6,0,Math.PI*2);
+  ctx.fillStyle = '#fff8c4';
+  ctx.fill();
+  ctx.strokeStyle='#160c07'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.arc(0,0,6,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,0.45)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.arc(0,0,6,t*0.1,t*0.1+Math.PI*1.2); ctx.stroke();
 
   // antenna
-  ctx.strokeStyle = shadeColor(color,-70);
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#160c07';
+  ctx.lineWidth = 2.2;
   ctx.beginPath(); ctx.moveTo(0,-13); ctx.lineTo(0,-19); ctx.stroke();
   ctx.fillStyle = '#ff5555';
   ctx.shadowColor = '#ff5555'; ctx.shadowBlur=6;
   ctx.beginPath(); ctx.arc(0,-19,2.2,0,Math.PI*2); ctx.fill();
-  ctx.shadowBlur = 0;
+  ctx.strokeStyle='#160c07'; ctx.lineWidth=1; ctx.shadowBlur=0;
+  ctx.stroke();
 
   // corner rivets
-  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
   [[-9,-9],[9,-9],[-9,9],[9,9]].forEach(([rx,ry])=>{
     ctx.beginPath(); ctx.arc(rx,ry,1.3,0,Math.PI*2); ctx.fill();
   });
 }
 
 function drawGhostEnemy(color, t){
-  const grad = ctx.createRadialGradient(0,-2,0.5,0,0,13);
-  grad.addColorStop(0,'#ffffff');
-  grad.addColorStop(0.4, color);
-  grad.addColorStop(1,'rgba(102,255,224,0)');
-  ctx.fillStyle = grad;
-  ctx.globalAlpha = 0.92;
   const wob = Math.sin(t*0.15)*2;
   ctx.beginPath();
-  ctx.arc(0,-2,12,Math.PI,0,false); // dome top half
+  ctx.arc(0,-2,12,Math.PI,0,false);
   ctx.lineTo(12,4);
   ctx.quadraticCurveTo(8+wob,14,4,7);
   ctx.quadraticCurveTo(0,13,-4,7);
   ctx.quadraticCurveTo(-8+wob,14,-12,4);
   ctx.closePath();
+
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.95;
   ctx.fill();
+
+  // flat highlight cap on top
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.ellipse(-3,-6,8,5,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(4,6,9,6,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
   ctx.globalAlpha = 1;
 
-  ctx.fillStyle = 'rgba(5,60,50,0.85)';
+  ctx.strokeStyle = '#0a3a30';
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+
+  ctx.fillStyle = '#053b33';
   ctx.beginPath(); ctx.ellipse(-4,-3,1.6,2.2,0,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(4,-3,1.6,2.2,0,0,Math.PI*2); ctx.fill();
 }
